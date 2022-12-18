@@ -3,10 +3,10 @@ import * as React from "react";
 import {
   ExpandMoreOutlined,
   ChevronRight,
-  SettingsOutlined,
   DownloadOutlined,
   UploadFileOutlined,
   RestartAltOutlined,
+  ModeEditOutline,
 } from "@mui/icons-material";
 
 import { TreeItem, TreeView } from "@mui/lab";
@@ -37,8 +37,9 @@ export default function Tree() {
                 e.stopPropagation();
                 setNodeId(i.nodeId);
               }}
+              size="small"
             >
-              <SettingsOutlined />
+              <ModeEditOutline />
             </Button>
           </span>
         );
