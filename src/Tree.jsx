@@ -11,10 +11,11 @@ import {
 
 import { TreeItem, TreeView } from "@mui/lab";
 import { Button, Grid } from "@mui/material";
+import { Box, Container } from "@mui/system";
 import Editor from "@monaco-editor/react";
 
 import { useAppContext } from "./Context";
-import { Box, Container } from "@mui/system";
+import { allHide } from "./default";
 
 export default function Tree() {
   const {
@@ -25,6 +26,23 @@ export default function Tree() {
     handleReset,
     handleEditorChange,
   } = useAppContext();
+
+  const handleEditorWillMount = (monaco) => {
+    monaco.languages.registerCompletionItemProvider("json", {
+      provideCompletionItems: () => {
+        return {
+          suggestions: [
+            {
+              label: "ha",
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              documentation: "Defaul hide pemission setting",
+              insertText: JSON.stringify(allHide, null, 2),
+            },
+          ],
+        };
+      },
+    });
+  };
 
   const render = React.useCallback(
     (arr) =>
@@ -107,6 +125,7 @@ export default function Tree() {
             value={JSON.stringify(values, null, 2)}
             theme="vs-dark"
             onChange={handleEditorChange}
+            beforeMount={handleEditorWillMount}
           />
         </Grid>
       </Grid>
