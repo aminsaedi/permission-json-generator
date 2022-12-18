@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { allHide } from "./default";
 
 const AppContext = React.createContext(null);
@@ -59,6 +59,31 @@ export const Provider = ({ children }) => {
       if (Array.isArray(parssed)) setValues(parssed);
     } catch (error) {}
   };
+
+  const handleKeyPress = useCallback((event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === "s") {
+      event.preventDefault();
+      handleDownload();
+    }
+    if ((event.metaKey || event.ctrlKey) && event.key === "o") {
+      event.preventDefault();
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".json";
+      input.onchange = handleUpload;
+      input.click();
+    }
+  }, []);
+
+  useEffect(() => {
+    // attach the event listener
+    document.addEventListener("keydown", handleKeyPress);
+
+    // remove the event listener
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   const value = {
     nodeId,
