@@ -27,7 +27,7 @@ export const roles = [
   },
   {
     key: "PAY_MANAGER",
-    label: "PAY_MANAGER",
+    label: "Pay Manager",
   },
   {
     key: "CUSTOMER",
