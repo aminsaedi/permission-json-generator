@@ -56,7 +56,7 @@ export const Provider = ({ children }) => {
   const handleEditorChange = (text) => {
     try {
       const parssed = JSON.parse(text);
-      setValues(parssed);
+      if (Array.isArray(parssed)) setValues(parssed);
     } catch (error) {}
   };
 
