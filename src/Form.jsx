@@ -20,21 +20,22 @@ import _ from "lodash";
 import { useAppContext } from "./Context";
 import { accessLevels, roles, editableRoles } from "./default";
 
-const search = (key, arr = [], result = []) => {
-  for (const item of arr) {
-    if (item.nodeId === key) {
-      result.push(item);
-      break;
-    }
-    if (item.children && item.children.length > 0) {
-      const temp = search(key, item.children, [...result]);
-      if (temp) {
-        result = [...result, item, ...temp];
+function findPathToRoot(nodeId, data) {
+  let path = [];
+  for (let i = 0; i < data.length; i++) {
+    let node = data[i];
+    if (node.nodeId === nodeId) {
+      return [node, ...path];
+    } else if (node.children) {
+      let subPath = findPathToRoot(nodeId, node.children);
+      if (subPath) {
+        path.unshift(node);
+        return [...subPath, ...path];
       }
     }
   }
-  return result;
-};
+  return null;
+}
 
 function TabPanel(props) {
   const { children, value, item, ...other } = props;
@@ -51,16 +52,6 @@ function TabPanel(props) {
   );
 }
 
-const getNode = (arr = [], path = []) => {
-  const node = arr.find((i) => i.nodeId === path[0]);
-  if (path.length === 1) {
-    return node;
-  } else {
-    path.shift();
-    return getNode(node.children, path);
-  }
-};
-
 export default function Form() {
   const { setNodeId, nodeId, values, setValues } = useAppContext();
 
@@ -68,21 +59,19 @@ export default function Form() {
     setNodeId(undefined);
   };
 
-  const path = useMemo(() => (nodeId ? search(nodeId, values) : []), [nodeId]);
+  const path = useMemo(
+    () => (nodeId ? findPathToRoot(nodeId, values)?.reverse() : []),
+    [nodeId, values]
+  );
 
   const [loggedInUser, setLoggedInUser] = useState("ORG_ADMIN");
   const [viewedUser, setViewedUser] = useState("EMPLOYEE");
 
   const currentNode = useMemo(() => {
-    if (path.length === 0) {
-      return undefined;
-    }
-    const node = getNode(
-      values,
-      path.map((i) => i.nodeId)
-    );
-    return node;
-  }, [path, values]);
+    return path.at(-1);
+  }, [path]);
+
+  console.log({ currentNode });
 
   const value = useMemo(() => {
     return currentNode?.permission?.[loggedInUser]?.[viewedUser] || "H";
@@ -119,10 +108,20 @@ export default function Form() {
         </Breadcrumbs>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
           <Tabs value={loggedInUser} onChange={(_, t) => setLoggedInUser(t)}>
             {roles.map((i) => (
-              <Tab key={i.key} label={i.label} value={i.key} />
+              <Tab
+                style={{ textTransform: "none" }}
+                key={i.key}
+                label={i.label}
+                value={i.key}
+              />
             ))}
           </Tabs>
         </Box>
@@ -143,7 +142,12 @@ export default function Form() {
                 sx={{ borderRight: 1, borderColor: "divider" }}
               >
                 {editableRoles.map((i) => (
-                  <Tab key={i.key} label={i.label} value={i.key} />
+                  <Tab
+                    style={{ textTransform: "none" }}
+                    key={i.key}
+                    label={i.label}
+                    value={i.key}
+                  />
                 ))}
               </Tabs>
               {editableRoles.map((i) => (
